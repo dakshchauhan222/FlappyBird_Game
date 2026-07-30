@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+    <canvas id="canvas" width="1200" height="800" style="border: 10px solid black;"></canvas>
+</body>
+<script>
+    async function loadgame() {
+        let canvas = document.getElementById("canvas");
+        let ctx = canvas.getContext("2d");
+        let y = 0;
+        let yVelocity = 0;
+        let grav = 9.8;
+        let score = 0;
+        let gameOver = false;
+
+        let pipes = [];
+        let pipeWidth = 100;
+        let gap = 200;
+        let pipeSpeed = 3;
+
+
+        // Event listener for spacebar key press is se jump kregi birdd
+        document.onkeyup = function (event) {
+            if (event.code === "Space") {
+
+                if (gameOver) {
+                    restartGame();
+                    return;
+                }
+
+                yVelocity = -2.5;
+            }
+        };
+
+
+
+
+        let bird = new Image();
+        let background = new Image();
+        let pipeTop = new Image();
+        let pipeBottom = new Image();
+        bird.src = "images/bird1.png";
+        background.src = "images/background.png";
+        pipeTop.src = "images/upper.png";
+        pipeBottom.src = "images/lower.png";
+        let hitsound = new Audio("faaah.mp3");
+
+
+        // Function to create a new pipe with random height 
+        function createPipe() {
+            let topPipe = Math.floor(Math.random() * 300) + 50;
+            pipes.push({
+                x: canvas.width,
+                topPipe: topPipe,
+                passed: false
+            });
+        }
+
+        // Update function to handle game logic and rendering like main in cpp 
+        function update() {
+
+            if (gameOver) {
+                return;
+            }
+
+
+            yVelocity += grav * 0.005;
+            y += yVelocity;
+            for (let i = 0; i < pipes.length; i++) {
+                pipes[i].x -= pipeSpeed;
+
+                //Score checking
+                if (!pipes[i].passed && pipes[i].x + pipeWidth < 10) {
+                    pipes[i].passed = true;
+                    score++;
+                }
+
+                //Collision detection
+                let birdX = 10;
+                let birdWidth = 60;
+                let birdHeight = 60;
+
+                if (birdX + birdWidth > pipes[i].x && birdX < pipes[i].x + pipeWidth) {
+                    if (y < pipes[i].topPipe || y + birdHeight > pipes[i].topPipe + gap) {
+                    
+                        if(!gameOver){
+                            gameOver = true;
+                            hitsound.currentTime = 0;
+                            hitsound.play();
+                            setTimeout(() => {
+                                alert("Game Over! Your score is: " + score);
+                                restartGame();
+                                
+                            }, 100);   
+                        }
+
+
+                    }
+                }
+
+                // Remove pipes that have gone off screen
+                if (pipes[i].x < -pipeWidth) {
+                    pipes.splice(i, 1);
+                    i--;
+                }
+            }
+
+
+            if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 300) {
+                createPipe();
+            }
+
+            ctx.clearRect(0, 0, 1200, 800);
+            ctx.drawImage(background, 0, 0, 1200, 800);
+            for (let i = 0; i < pipes.length; i++) {
+                let pipe = pipes[i];
+
+                ctx.drawImage(pipeTop, pipe.x, 0, pipeWidth, pipe.topPipe);
+                ctx.drawImage(pipeBottom, pipe.x, pipe.topPipe + gap, pipeWidth, canvas.height - (pipe.topPipe + gap));
+            }
+
+            ctx.drawImage(bird, 10, y, 60, 60);
+            ctx.font = "40px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText("Score:" + score, 20, 50);
+
+
+            requestAnimationFrame(update);
+        }
+
+        function restartGame() {
+            y = 0;
+            yVelocity = 0;
+            score = 0;
+            gameOver = false;
+            pipes = [];
+            createPipe();
+            update();
+        }
+
+
+        createPipe();
+        update();
+
+
+    }
+
+
+
+
+    loadgame();
+</script>
+
+</html>
