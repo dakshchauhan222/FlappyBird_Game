@@ -30,7 +30,7 @@ A simple Flappy Bird clone built using **HTML5 Canvas** and **JavaScript**.
 
 ## Preview
 
-*Add a screenshot or GIF here.*
+(https://dakshchauhan222.github.io/FlappyBird_Game/)
 
 ---
 
